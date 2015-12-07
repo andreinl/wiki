@@ -1,4 +1,4 @@
-{% from "helpers.html" import input %}
+{% from "wiki/helpers.html" import input %}
 <!DOCTYPE html>
 <html>
 	<head>
@@ -15,21 +15,21 @@
 						<div class="span12">
 							<a href="#" class="brand">{{ config.TITLE }}</a>
 							<ul class="nav">
-								<li><a href="{{ url_for('home') }}">Home</a></li>
-								<li><a href="{{ url_for('index') }}">Index</a></li>
-								<li><a href="{{ url_for('tags') }}">Tags</a></li>
-								<li><a href="{{ url_for('search') }}">Search</a></li>
+								<li><a href="{{ url_for('blue_wiki.home') }}">Home</a></li>
+								<li><a href="{{ url_for('blue_wiki.index') }}">Index</a></li>
+								<li><a href="{{ url_for('blue_wiki.tags') }}">Tags</a></li>
+								<li><a href="{{ url_for('blue_wiki.search') }}">Search</a></li>
 								<li class="divider-vertical"></li>
-								<li><a href="{{ url_for('create') }}">New Page</a></li>
+								<li><a href="{{ url_for('blue_wiki.create') }}">New Page</a></li>
 								<li class="divider-vertical"></li>
 								<li></li>
 							</ul>
 
 							<ul class="nav pull-right">
 								{% if current_user.is_anonymous() %}
-									<li><a href="{{ url_for('user_login') }}">Login</a></li>
+									<li><a href="{{ url_for('blue_user.user_login') }}">Login</a></li>
 								{% else %}
-									<li><a href="{{ url_for('user_logout') }}">Logout</a></li>
+									<li><a href="{{ url_for('blue_user.user_logout') }}">Logout</a></li>
 								{% endif %}
 							</ul>
 						</div>

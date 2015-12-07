@@ -2,4 +2,5 @@ venv
 .venv
 *.pyc
 *.sublime-*
+*.idea
 content/

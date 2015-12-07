@@ -1,9 +1,8 @@
 # Readme
 
-## About
-As I wanted a wiki that just uses plain markdown files as backend, that is easy
-to use and that is written in python, to enable me to easily hack around,
-but found nothing, I just wrote this down. I hope that it might help others ,too.
+## Preface
+
+I needed a wiki that just uses plain markdown files as backend and is written in Flask. Fortunately I find https://github.com/alexex/wiki. Unfortunately all the code was inside the same file, so I transformed it in a regular Flask project that uses Blueprints. It also makes this project more useful, because Blueprint can be reused in other projects. Users authentication is present, but you should create *users.json* by hand and format is unknown.
 
 ## Features
 
@@ -19,36 +18,25 @@ but found nothing, I just wrote this down. I hope that it might help others ,too
 	* and many more
 * easily themable
 
-### Planned
-
-* Speed Improvements
-	* Code Optimizations
-	* Caching
-* Wikilinks-Support
-* Access protection (for private wikis or to limit edits to a known group)
-* Settings via the webinterface
-
-
 ## Setup
 Just clone this repository, cd into it, run `pip install -r requirements.txt`
-and create `content/` in the root directory with a `config.py` in it,
-that contains at least the following:
+and edit a `config.py` in the root directory:
 
 	# encoding: <your encoding (probably utf-8)
-	SECRET_KEY='a unique and long key'
-	TITLE='Wiki' # Title Optional
+	SECRET_KEY = 'a unique and long key'
+	TITLE = 'Wiki'  # Title Optional
 
 ## Start
-Afterwards just run the app however you want. I personally recommend something
-like gunicorn:
+Afterwards just run the app which will run the development server in debug
+mode. 
+
+    python run.py runserver -d -r
+    
+Or with gunicorn:
 	
-	gunicorn app:app
+	gunicorn run:app
 
 You can install `setproctitle` with pip to get meaningful process names.
-
-If you just want to try something out or debug something, you can execute
-the app with `python app.py` which will run the development server in debug
-mode. Have fun.
 
 ## Theming
 The templates are based on jinja2. I used
@@ -57,6 +45,5 @@ If you want to change the overall design, you should edit `templates/base.html`
 and/or `static/bootstrap.css`. If you do not like specific parts of the site,
 it should be fairly easy to find the equivalent template and edit it.
 
-## Contributors
-
-Thank you very much to my two top contributers @walkerh and @traeblain. You two have posted so many issues and especially solved them with so many pull requests, that I sometimes lose track of it! :)
+## Users
+If you will be able to deduct *users.json* format, you will be able to use authentication, though almost nothing is ready here.

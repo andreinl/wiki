@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "wiki/base.html" %}
 
 {% block title %}
 {% if search %}
@@ -24,7 +24,7 @@
 	{% if results %}
 		<ul>
 			{% for result in results %}
-				<li><a href="{{ url_for('display', url=result.url) }}">{{ result.title }}</a></li>
+				<li><a href="{{ url_for('blue_wiki.display', url=result.url) }}">{{ result.title }}</a></li>
 			{% endfor %}
 		</ul>
 	{% else %}
