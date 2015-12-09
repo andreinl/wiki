@@ -1,9 +1,9 @@
 from flask import render_template, flash, redirect, url_for, request
-from flask.ext.login import current_user
-
-from functools import wraps
+from flask_user import current_user, login_required, roles_required
 from app import app
-from app import loginmanager
+# from flask.ext.login import current_user
+# from functools import wraps
+# from app import loginmanager
 
 from wiki import Wiki
 from wiki import Processors
@@ -14,21 +14,27 @@ blue_wiki = Blueprint('blue_wiki', __name__, template_folder='templates', url_pr
 
 wiki = Wiki(app.config.get('CONTENT_DIR'))
 
-def protect(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        if app.config.get('PRIVATE') and not current_user.is_authenticated():
-            return loginmanager.unauthorized()
-        return f(*args, **kwargs)
-    return wrapper
+# def protect(f):
+#     @wraps(f)
+#     def wrapper(*args, **kwargs):
+#         if app.config.get('PRIVATE') and not current_user.is_authenticated():
+#             return loginmanager.unauthorized()
+#         return f(*args, **kwargs)
+#     return wrapper
 
 """
     Routes
     ~~~~~~
 """
+import pdb
+
+@app.route('/')
+def home_i():
+    pdb.set_trace()
+    return redirect(url_for('blue_wiki.home'))
+
 
 @blue_wiki.route('/')
-@protect
 def home():
     page = wiki.get('home')
     if page:
@@ -37,21 +43,19 @@ def home():
 
 
 @blue_wiki.route('/index/')
-@protect
 def index():
     pages = wiki.index()
     return render_template('wiki/index.html', pages=pages)
 
 
 @blue_wiki.route('/<path:url>/')
-@protect
 def display(url):
     page = wiki.get_or_404(url)
     return render_template('wiki/page.html', page=page)
 
 
 @blue_wiki.route('/create/', methods=['GET', 'POST'])
-@protect
+@roles_required('writer')    # Limits access to users with the 'writer' role
 def create():
     form = URLForm()
     if form.validate_on_submit():
@@ -60,7 +64,7 @@ def create():
 
 
 @blue_wiki.route('/edit/<path:url>/', methods=['GET', 'POST'])
-@protect
+@roles_required('writer')    # Limits access to users with the 'writer' role
 def edit(url):
     page = wiki.get(url)
     form = EditorForm(obj=page)
@@ -75,7 +79,7 @@ def edit(url):
 
 
 @blue_wiki.route('/preview/', methods=['POST'])
-@protect
+@roles_required('writer')    # Limits access to users with the 'writer' role
 def preview():
     a = request.form
     data = {}
@@ -85,7 +89,7 @@ def preview():
 
 
 @blue_wiki.route('/move/<path:url>/', methods=['GET', 'POST'])
-@protect
+@roles_required('writer')    # Limits access to users with the 'writer' role
 def move(url):
     page = wiki.get_or_404(url)
     form = URLForm(obj=page)
@@ -97,7 +101,7 @@ def move(url):
 
 
 @blue_wiki.route('/delete/<path:url>/')
-@protect
+@roles_required('writer')    # Limits access to users with the 'writer' role
 def delete(url):
     page = wiki.get_or_404(url)
     wiki.delete(url)
@@ -106,21 +110,18 @@ def delete(url):
 
 
 @blue_wiki.route('/tags/')
-@protect
 def tags():
     tags = wiki.get_tags()
     return render_template('wiki/tags.html', tags=tags)
 
 
 @blue_wiki.route('/tag/<string:name>/')
-@protect
 def tag(name):
     tagged = wiki.index_by_tag(name)
     return render_template('wiki/tag.html', pages=tagged, tag=name)
 
 
 @blue_wiki.route('/search/', methods=['GET', 'POST'])
-@protect
 def search():
     form = SearchForm()
     if form.validate_on_submit():
@@ -136,4 +137,4 @@ def search():
 """
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('404.html'), 404
+    return render_template('wiki/404.html'), 404

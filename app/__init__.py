@@ -1,8 +1,9 @@
-from flask import Flask, render_template, flash, redirect, url_for, request, abort
-
+from flask import Flask
+from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.mail import Mail
 from flask.ext.login import LoginManager, login_required, current_user, login_user, logout_user
 from flask.ext.script import Manager
-
+from flask.ext.migrate import Migrate, MigrateCommand
 
 """
     Application Setup
@@ -10,17 +11,84 @@ from flask.ext.script import Manager
 """
 
 app = Flask(__name__)
-
 app.config.from_object('config')
 
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
 manager = Manager(app)
+manager.add_command('db', MigrateCommand)
 
-loginmanager = LoginManager()
-loginmanager.init_app(app)
-loginmanager.login_view = 'user_login'
+import logging
+from logging.handlers import SMTPHandler
 
-from app.user.views import blue_user
-app.register_blueprint(blue_user)
+# Setup Flask-User
+from flask.ext.user import UserManager, SQLAlchemyAdapter
+
+# Initialize Flask-Mail
+mail = Mail(app)
+
+# Setup Flask-User to handle user account related forms
+# from app.users.models import UserAuth, User
+from app.users.models import User, Role
+# from app.users.forms import MyRegisterForm
+from app.users.views import user_profile_page
+
+db_adapter = SQLAlchemyAdapter(db, User, RoleClass=Role)        # Setup the SQLAlchemy DB Adapter
+        # UserAuthClass=UserAuth)                 #   using separated UserAuth/User data models
+user_manager = UserManager(
+    db_adapter, app,     # Init Flask-User and bind to app
+    # register_form=MyRegisterForm,           #   using a custom register form with UserProfile fields
+    user_profile_view_function=user_profile_page,
+)
+
+from app.users.views import system_user
+app.register_blueprint(system_user)
+
+# loginmanager = LoginManager()
+# loginmanager.init_app(app)
+# loginmanager.login_view = 'user_login'
+#
+# from app.user.views import blue_user
+# app.register_blueprint(blue_user)
 
 from app.wiki.views import blue_wiki
 app.register_blueprint(blue_wiki)
+
+
+def init_error_logger_with_email_handler(app):
+    """
+    Initialize a logger to send emails on error-level messages.
+    Unhandled exceptions will now send an email message to app.config.ADMINS.
+    """
+    if app.debug:
+        return                        # Do not send error emails while developing
+
+    # Retrieve email settings from app.config
+    host = app.config['MAIL_SERVER']
+    port = app.config['MAIL_PORT']
+    from_addr = app.config['MAIL_DEFAULT_SENDER']
+    username = app.config['MAIL_USERNAME']
+    password = app.config['MAIL_PASSWORD']
+    secure = () if app.config.get('MAIL_USE_TLS') else None
+
+    # Retrieve app settings from app.config
+    to_addr_list = app.config['ADMINS']
+    subject = app.config.get('APP_SYSTEM_ERROR_SUBJECT_LINE', 'System Error')
+
+    # Setup an SMTP mail handler for error-level messages
+    mail_handler = SMTPHandler(
+        mailhost=(host, port),                  # Mail host and port
+        fromaddr=from_addr,                     # From address
+        toaddrs=to_addr_list,                   # To address
+        subject=subject,                        # Subject line
+        credentials=(username, password),       # Credentials
+        secure=secure,
+    )
+    mail_handler.setLevel(logging.ERROR)
+    app.logger.addHandler(mail_handler)
+
+    # Log errors using: app.logger.error('Some error message')
+
+# Setup an error-logger to send emails to app.config.ADMINS
+init_error_logger_with_email_handler(app)

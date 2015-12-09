@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Roles (Groups)</h1>
+
+{% from "base_templates/form_macros.html" import render_field, render_submit_field %}
+<form action="" method="POST" class="form" role="form">
+
+    <table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Label</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for role in roles %}
+    <tr>
+        <td><a href="{{ url_for('system_user.manage_role', role_id=role.id) }}">{{ role.name }}</a></td>
+        <td>{{ role.label }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+</form>
+
+<a href="{{ url_for('system_user.manage_role') }}">New Role</a>
+
+{% endblock %}

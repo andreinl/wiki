@@ -27,9 +27,10 @@
 
 							<ul class="nav pull-right">
 								{% if current_user.is_anonymous() %}
-									<li><a href="{{ url_for('blue_user.user_login') }}">Login</a></li>
+									<li><a href="{{ url_for('user.login') }}">Login</a></li>
 								{% else %}
-									<li><a href="{{ url_for('blue_user.user_logout') }}">Logout</a></li>
+                                    <li><a href="{{ url_for('system_user.user_profile_page') }}">{{ current_user.first_name or current_user.username }}</a></li>
+									<li><a href="{{ url_for('user.logout') }}">Logout</a></li>
 								{% endif %}
 							</ul>
 						</div>
@@ -43,7 +44,9 @@
 				<div class="span10 offset1">
 					{% block header %}
 						<div class="page-header">
+							{% if page %}
 							<h1>{% block title %}{{ page.title }}{% endblock title %}</h1>
+							{% endif %}
 						</div>
 					{% endblock header %}
 				</div>
@@ -71,6 +74,7 @@
 					{% endblock sidebar %}
 				</div>
 			</div>
+            
 		</div>
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.9.0/jquery.min.js "></script>
 		<script type="text/javascript">
